@@ -60,6 +60,14 @@ class Model_MongoItem extends Model_Mongo {
 		if($unique) $this->data[$field] = array_unique($this->data[$field]);
 	}
 
+	// remove array by value
+	public function removeByValue($field, $value) {
+		if(!is_array($this->data[$field])) throw new Exception("Cannot removeByValue from non array " . $field);
+		if(($key = array_search($value, $this->data[$field])) !== false) {
+		    unset($this->data[$field][$key]);
+		}
+	} 
+
 	public function loadExternal($field) {
 		$external = $this->externals[$field];
 		// load single model
