@@ -11,6 +11,11 @@ class Model_MongoItem extends Model_Mongo {
 
 		if(!$collectionName) throw new Exception("No collection selected");
 
+		// convert constructor (int)id
+		if(is_int($data)) {
+			$data = ['_id' => $data];
+		}
+
 		$this->collectionName = $collectionName;
 		$this->collection = $this->db->$collectionName;
 		$this->data = $data;
@@ -42,11 +47,12 @@ class Model_MongoItem extends Model_Mongo {
 
 	// data setter
 	public function __set($field, $value) {
-		if(array_key_exists($field, $this->data)) {
-			$this->data[$field] = $value;
-			$this->dirtyFields[] = $value;
-		}
-		else throw new Exception("Cannot set " . $field);
+		$this->data[$field] = $value;
+		$this->setDirty($field, $value);
+	}
+
+	private function setDirty($field, $value) {
+		$this->dirtyFields[$field] = $value;
 	}
 
 	public function isDirty($field = false) {
@@ -54,11 +60,12 @@ class Model_MongoItem extends Model_Mongo {
 		else return array_key_exists($field, $this->dirtyFields);
 	}
 
-	protected function validate() {
-		return true;
-	}
+	protected function validate() {}
 
 	public function save() {
+		// must validate
+		$this->validate();
+
 		// update if id
 		if(!array_key_exists('_id', $this->data)) {
 			$this->create();
@@ -76,11 +83,6 @@ class Model_MongoItem extends Model_Mongo {
 		if(!array_key_exists('_id', $this->data)) 
 			$this->data['_id'] = $this->getNextSequence('_id');
 
-		//var_dump($this->data);exit;
-
-		// must validate
-		if(!$this->validate()) throw new Exception('item not valid');
-
 		// do the save
 		$r = $this->collection->save($this->data);
 		$this->afterCreate();
@@ -94,22 +96,24 @@ class Model_MongoItem extends Model_Mongo {
 	// update
 	public function update() {
 		$this->beforeUpdate();
-		if(!$this->validate()) throw new Exception('item not valid');
 		$this->collection->save($this->data);
 		$this->afterUpdate();
 	}
 
 	// update hook
-	public function beforeUpdate() {}
-	public function afterUpdate() {}
+	protected function beforeUpdate() {}
+	protected function afterUpdate() {}
 
 	// remove
 	public function remove() {
 		if(!array_key_exists('_id', $this->data)) die('no id');
+		$this->beforeRemove();
 		$this->collection->remove(['_id' => $this->data['_id']]);
+		$this->afterRemove();
 	}
 
 	// remove hook
 	protected function beforeRemove() {}
+	protected function afterRemove() {}
 
 }
