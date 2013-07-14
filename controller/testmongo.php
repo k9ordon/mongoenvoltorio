@@ -21,5 +21,12 @@ class Controller_TestMongo extends Controller {
 		$user = new Model_MongoItem('users', ['_id' => 4]);
 		$user->remove();
 	}
+
+	public function Action_Testusers() {
+		$users = new Model_Users();
+		foreach($users->find()->toModels() as $user) {
+			echo "<hr>" . $user->name;
+		}
+	}
 }
 ?>
