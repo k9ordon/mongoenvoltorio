@@ -16,6 +16,10 @@ class Controller_TestMongo extends Controller {
 		$user->name = 'New Username';
 		$user->save();
 		print_r($user);
+
+		// remove
+		$user = new Model_MongoItem('users', ['_id' => 4]);
+		$user->remove();
 	}
 }
 ?>
