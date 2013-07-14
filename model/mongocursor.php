@@ -13,18 +13,24 @@ class Model_MongoCursor extends Model_Mongo {
 	}
 
 	public function limit($num) {
-		return $this->cursor->limit($num);
+		$this->cursor = $this->cursor->limit($num);
+		return $this;
 	}
 
-	public function count() {
+	public function sort($fields) {
+		$this->cursor = $this->cursor->sort($fields);
+		return $this;
+	}
 
+	public function count($foundOnly = false) {
+		return $this->cursor->count($foundOnly);
 	}
 
 	public function toArray() {
 		return iterator_to_array($this->cursor);
 	}
 
-	public function toModels() {
+	public function load() {
 		return $this->loadModels($this->modelType, $this->toArray());
 	}
 }
