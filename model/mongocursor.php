@@ -35,7 +35,9 @@ class Model_MongoCursor extends Model_Mongo {
 	}
 
 	public function random() {
-		$random = rand(0, $this->count(true) - 1);
+		$count = $this->count(true);
+		if($count == 0) throw new Exception('No Random on no records.');
+		$random = rand(0, $count - 1);
 		$randomItem = $this->cursor->limit(-1)->skip($random)->getNext();
 		return $this->loadModel($this->modelType, $randomItem);
 	}
