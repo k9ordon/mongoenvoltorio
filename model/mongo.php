@@ -2,7 +2,7 @@
 
 class Model_Mongo extends Model {
 	//mongo db
-	public $db = null;
+	public $db = null;//
 
 	// mongo
 	public static $mongo = null;
@@ -22,19 +22,22 @@ class Model_Mongo extends Model {
 	}
 
 	public function getNextSequence($field) {
-		$r = $this->collection->find()->sort(array($field => -1))->limit(1);
-		$r->next();
-		$r = $r->current();
-
-	   return $r[$field] + 1;
+		$cursor = $this->collection->find()->sort(array($field => -1))->limit(1);
+		$cursor->next();
+		$r = $cursor->current();
+   		return $r[$field] + 1;
 	}
 
-	public function loadModel($modelName = 'Model_MongoItem', $id) {
-
+	public function loadModel($modelName = 'MongoItem', $data) {
+		return new $modelName($data);
 	}
 
-	public function loadModels($modelName, $ids = array()) {
-
+	public function loadModels($modelName, $dataArray = array()) {
+		$models = array();
+		foreach($dataArray as $dataItem) {
+			$models[] = $this->loadModel($modelName, $dataItem);
+		}
+		return $models;
 	}
 
 }
