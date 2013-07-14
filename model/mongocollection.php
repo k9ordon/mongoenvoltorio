@@ -31,7 +31,7 @@ class Model_MongoCollection extends Model_Mongo {
 		return $this->cursor;
 	}
 
-	public function byIds($ids = array()) {
-		return $this->loadModels($this->modelType, $ids);
+	public function findIds($ids = array()) {
+		return $this->find(['_id' => ['$in' => $ids]]);
 	}
 }

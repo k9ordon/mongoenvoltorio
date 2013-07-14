@@ -65,6 +65,7 @@ class Model_MongoItem extends Model_Mongo {
 		if(!is_array($this->data[$field])) throw new Exception("Cannot removeByValue from non array " . $field);
 		if(($key = array_search($value, $this->data[$field])) !== false) {
 		    unset($this->data[$field][$key]);
+		    $this->data[$field] = array_values($this->data[$field]);
 		}
 	} 
 
@@ -74,9 +75,10 @@ class Model_MongoItem extends Model_Mongo {
 		if(array_key_exists('id', $external)) {
 			$this->externalObjects[$field] = $this->loadModel($external['model'], $this->data[$external['id']]);
 		}
-		// load model array
+		// load collection by ids
 		else {
-			$this->externalObjects[$field] = $this->loadModels($external['model'], $this->data[$external['id']]);
+			$collection = new $external['model']();
+			$this->externalObjects[$field] = $collection->findIds($this->data[$external['ids']]);
 		}
 
 		return $this->externalObjects[$field];
