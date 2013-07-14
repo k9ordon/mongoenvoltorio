@@ -7,7 +7,9 @@ class Model_MongoItem extends Model_Mongo {
 	protected $dirtyFields = array();
 
 	protected $externals = array();
-	protected $externalObjects = array();	
+	protected $externalObjects = array();
+
+	protected $defaultData = array();
 
 	public function __construct($collectionName = false, $data = array()) {
 		parent::__construct();
@@ -24,13 +26,12 @@ class Model_MongoItem extends Model_Mongo {
 		
 		// if only _id => load record
 		if(array_key_exists('_id', $data) && count($data) === 1) {
-			$record = $this->collection->findOne(['_id' => $data['_id']]);
-			if(!$record)  throw new Exception("Cannot load record with id " . $data['_id']);
-
-			else $this->data = $record;
-		} else {
-			$this->data = $data;
+			$resultItem = $this->collection->findOne(['_id' => $data['_id']]);
+			if(!$resultItem)  throw new Exception("Cannot load record with id " . $data['_id']);
+			else $data = $resultItem;
 		}
+
+		$this->data = array_merge($this->defaultData, $data);
 		return $this;
 	}
 
@@ -50,6 +51,13 @@ class Model_MongoItem extends Model_Mongo {
 	public function __set($field, $value) {
 		$this->data[$field] = $value;
 		$this->setDirty($field, $value);
+	}
+
+	// array push
+	public function push($field, $value, $unique = false) {
+		if(!is_array($this->data[$field])) throw new Exception("Cannot push to non array " . $field);
+		$this->data[$field][] = $value;
+		if($unique) $this->data[$field] = array_unique($this->data[$field]);
 	}
 
 	public function loadExternal($field) {
@@ -75,7 +83,10 @@ class Model_MongoItem extends Model_Mongo {
 		else return array_key_exists($field, $this->dirtyFields);
 	}
 
+	// validate methods @todo do not null || not default fields
 	protected function validate() {}
+	protected function validateCreate() {}
+	protected function validateUpdate() {}
 
 	public function isUnique($field) {
 		return (bool) $this->collection->findOne([$field => $this->$field], ['_id']);
@@ -98,6 +109,7 @@ class Model_MongoItem extends Model_Mongo {
 	public function create() {
 		$this->beforeCreate();
 		$this->validate();
+		$this->validateCreate();
 		// unique next id
 		if(!array_key_exists('_id', $this->data)) 
 			$this->data['_id'] = $this->getNextSequence('_id');
@@ -116,6 +128,7 @@ class Model_MongoItem extends Model_Mongo {
 	public function update() {
 		$this->beforeUpdate();
 		$this->validate();
+		$this->validateUpdate();
 		$this->collection->save($this->data);
 		$this->afterUpdate();
 	}
