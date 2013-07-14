@@ -18,8 +18,12 @@ class Model_MongoCollection extends Model_Mongo {
 		return $this;
 	}
 
-	public function findOne() {
-
+	public function findOne($query = array()) {
+		$data = $this->collection->findOne($query);
+		if(is_array($data)) {
+			return $this->loadModel($this->modelType, $data);
+		}
+		return false;
 	}
 
 	public function find($query = array(), $fields = array()) {
