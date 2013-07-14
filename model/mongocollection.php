@@ -18,10 +18,16 @@ class Model_MongoCollection extends Model_Mongo {
 		return $this;
 	}
 
-	public function findOne() {}
+	public function findOne() {
+
+	}
 
 	public function find($query = array(), $fields = array()) {
 		$this->cursor = new Model_MongoCursor($this->collection->find($query, $fields), $this->modelType);
 		return $this->cursor;
+	}
+
+	public function byIds($ids = array()) {
+		return $this->loadModels($this->modelType, $ids);
 	}
 }
