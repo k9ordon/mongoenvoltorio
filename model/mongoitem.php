@@ -28,7 +28,7 @@ class Model_MongoItem extends Model_Mongo {
 			$this->update();
 		}
 
-		// week record
+		// weak record
 		else {}
 
 		return $this;
@@ -54,10 +54,19 @@ class Model_MongoItem extends Model_Mongo {
 		else return array_key_exists($field, $this->dirtyFields);
 	}
 
-	protected function validate() {}
+	protected function validate() {
+		return true;
+	}
 
 	public function save() {
-
+		// update if id
+		if(!array_key_exists('_id', $this->data)) {
+			$this->create();
+		}
+		// create if no id
+		else {
+			$this->update();
+		}
 	}
 
 	// create
@@ -65,7 +74,9 @@ class Model_MongoItem extends Model_Mongo {
 		$this->beforeCreate();
 		// unique next id
 		if(!array_key_exists('_id', $this->data)) 
-			$this->data['_id'] = $this->getNextSequence($this->c, '_id');
+			$this->data['_id'] = $this->getNextSequence('_id');
+
+		//var_dump($this->data);exit;
 
 		// must validate
 		if(!$this->validate()) throw new Exception('item not valid');
