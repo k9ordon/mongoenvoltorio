@@ -41,7 +41,14 @@ class Model_MongoCollection extends Model_Mongo {
 	}
 
 	// shorthand
-	public function queryIds($ids = array()) {
+	public function queryIds($ids = array(), $keepOrder = false) {
+		if($keepOrder) {
+			$or = [];
+			foreach($ids as $id)
+				$or[] = ['_id' => (int)$id];
+			$this->query(['$or' => $or]);
+		}
+
 		return $this->query(['_id' => ['$in' => $ids]]);
 	}
 
