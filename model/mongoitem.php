@@ -6,8 +6,8 @@ class Model_MongoItem extends Model_Mongo {
 
 	protected $dirtyFields = array();
 
-	protected $externals = array();
-	protected $externalObjects = array();
+	protected $references = array();
+	protected $referenceObjects = array();
 
 	protected $defaultData = array();
 
@@ -37,10 +37,10 @@ class Model_MongoItem extends Model_Mongo {
 
 	// data getter
 	public function __get($field) {
-		// return externalObject
-		if(array_key_exists($field, $this->externalObjects)) return $this->externalObjects[$field];
-		// late load external 
-		elseif(array_key_exists($field, $this->externals)) return $this->loadExternal($field);
+		// return referenceObject
+		if(array_key_exists($field, $this->referenceObjects)) return $this->referenceObjects[$field];
+		// late load reference 
+		elseif(array_key_exists($field, $this->references)) return $this->loadReference($field);
 		// return data field
 		elseif(array_key_exists($field, $this->data)) return $this->data[$field];
 		// fail
@@ -69,19 +69,19 @@ class Model_MongoItem extends Model_Mongo {
 		}
 	} 
 
-	public function loadExternal($field) {
-		$external = $this->externals[$field];
+	public function loadReference($field) {
+		$reference = $this->references[$field];
 		// load single model
-		if(array_key_exists('id', $external)) {
-			$this->externalObjects[$field] = $this->loadModel($external['model'], $this->data[$external['id']]);
+		if(array_key_exists('id', $reference)) {
+			$this->referenceObjects[$field] = $this->loadModel($reference['model'], $this->data[$reference['id']]);
 		}
 		// load collection by ids
 		else {
-			$collection = new $external['model']();
-			$this->externalObjects[$field] = $collection->findIds($this->data[$external['ids']]);
+			$collection = new $reference['model']();
+			$this->referenceObjects[$field] = $collection->queryIds($this->data[$reference['ids']]);
 		}
 
-		return $this->externalObjects[$field];
+		return $this->referenceObjects[$field];
 	}
 
 	private function setDirty($field, $value) {
