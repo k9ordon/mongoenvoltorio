@@ -6,6 +6,8 @@ class Model_MongoCollection extends Model_Mongo {
 
 	protected $cursor;
 
+	protected $query = [];
+
 	public function __construct($collectionName = false, $modelType = false) {
 		parent::__construct();
 
@@ -31,7 +33,21 @@ class Model_MongoCollection extends Model_Mongo {
 		return $this->cursor;
 	}
 
-	public function findIds($ids = array()) {
-		return $this->find(['_id' => ['$in' => $ids]]);
+	public function query($query, $mergeToQuery = true) {
+		if($mergeToQuery) $this->query = array_merge($this->query, $query);
+		else $this->query = $query;
+
+		return $this;
+	}
+
+	// shorthand
+	public function queryIds($ids = array()) {
+		return $this->query(['_id' => ['$in' => $ids]]);
+	}
+
+	// load cursor on call
+	public function __call($func, $args) {
+		$this->find($this->query);
+		return call_user_func_array([$this->cursor, $func], $args);
 	}
 }
